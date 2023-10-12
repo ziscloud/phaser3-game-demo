@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import {sceneEvents} from "../events/EventBus";
 
 export default class GameOver extends Phaser.Scene {
 
@@ -20,6 +21,7 @@ export default class GameOver extends Phaser.Scene {
 
         this.input.keyboard.once('keydown-SPACE', () => {
             this.scene.start('game');
+            sceneEvents.emit('game-restarted')
         });
     }
 }

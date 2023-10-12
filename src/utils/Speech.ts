@@ -51,7 +51,7 @@ const createSpeechBubble=  (x:number, y:number, width:number, height:number, quo
             content.destroy(true);
         },
         callbackScope: this,
-        delay: 1000, // 1000 = 1 second
+        delay: 700  , // 1000 = 1 second
         loop: true
     });
 }

@@ -24,6 +24,33 @@ const createLizardAnims = (anims: Phaser.Animations.AnimationManager) => {
     });
 }
 
+const createWraithAnims = (anims: Phaser.Animations.AnimationManager) => {
+    anims.create({
+        key: 'wraith-idle',
+        frames: anims.generateFrameNames('wraith', {
+            start: 0,
+            end: 11,
+            suffix: '.png',
+            prefix: 'Wraith_Idle_',
+            zeroPad: 3
+        }),
+        repeat: -1,
+        frameRate: 10
+    });
+    anims.create({
+        key: 'wraith-moving',
+        frames: anims.generateFrameNames('wraith', {
+            start: 0,
+            end: 11,
+            suffix: '.png',
+            prefix: 'Wraith_Moving Forward_',
+            zeroPad: 3
+        }),
+        repeat: -1,
+        frameRate: 10
+    });
+}
+
 export {
-    createLizardAnims
+    createLizardAnims, createWraithAnims
 }

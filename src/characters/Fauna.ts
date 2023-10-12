@@ -1,7 +1,6 @@
 import Phaser from "phaser";
 import Chest from "../items/Chest";
 import {sceneEvents} from "../events/EventBus";
-import {createSpeechBubble} from "../utils/Speech";
 
 declare global {
     namespace Phaser.GameObjects {
@@ -24,7 +23,7 @@ export default class Fauna extends Phaser.Physics.Arcade.Sprite {
     private knives?: Phaser.Physics.Arcade.Group;
     private activeChest?: Chest;
     private _coins: number = 0;
-
+    private _goldCoinAudio: Phaser.Sound.BaseSound | Phaser.Sound.HTML5AudioSound | Phaser.Sound.WebAudioSound;
 
     get health(): number {
         return this._health;
@@ -38,6 +37,7 @@ export default class Fauna extends Phaser.Physics.Arcade.Sprite {
         super(scene, x, y, texture, frame);
         //
         this.anims.play('fauna-idle-down');
+        this._goldCoinAudio = this.scene.sound.add('gold-coin-audio');
     }
 
     handleDamage(dir: Phaser.Math.Vector2) {
@@ -51,10 +51,12 @@ export default class Fauna extends Phaser.Physics.Arcade.Sprite {
         --this._health;
 
         if (this._health <= 0) {
+            this.scene.sound.play('game-over-audio');
             this.healthState = HealthState.DEAD;
             this.anims.play('fauna-faint');
             this.setVelocity(0, 0);
         } else {
+            this.scene.sound.play('hurts-audio');
             this.setVelocity(dir.x, dir.y);
             this.setTint(0xff0000);
             this.healthState = HealthState.DAMAGE;
@@ -78,6 +80,12 @@ export default class Fauna extends Phaser.Physics.Arcade.Sprite {
         }
     }
 
+    public addCoins(coins: number) {
+        this._coins += coins;
+        this._goldCoinAudio.play();
+        sceneEvents.emit('player-coins-changed', this._coins);
+    }
+
     update(cursors: Phaser.Types.Input.Keyboard.CursorKeys) {
         if (!cursors) {
             return;
@@ -90,9 +98,8 @@ export default class Fauna extends Phaser.Physics.Arcade.Sprite {
         if (Phaser.Input.Keyboard.JustDown(cursors.space!)) {
             if (this.activeChest) {
                 const coins: number = this.activeChest.open();
-                this._coins += coins;
                 this.activeChest = undefined;
-                sceneEvents.emit('player-coins-changed', this._coins);
+                this.addCoins(coins);
             } else {
                 this.throwKnife();
             }
@@ -144,6 +151,8 @@ export default class Fauna extends Phaser.Physics.Arcade.Sprite {
             return;
         }
 
+        this.scene.sound.play('throw_knife-audio');
+
         const split = this.anims.currentAnim.key.split('-');
         const direction = split[2];
         const vec = new Phaser.Math.Vector2(0, 0);
@@ -170,9 +179,9 @@ export default class Fauna extends Phaser.Physics.Arcade.Sprite {
         knife.x += vec.x * 16;
         knife.y += vec.y * 16;
 
-        createSpeechBubble(this.x-14, this.y-60, 100, 40,
-            '“And now you\'re a boss, too... of this pile of rubble.”',
-            this.scene);
+        // createSpeechBubble(this.x-14, this.y-60, 100, 40,
+        //     '“yaya”',
+        //     this.scene);
 
         const speed = 300;
         knife.setVelocity(vec.x * speed, vec.y * speed);
